@@ -1,6 +1,7 @@
 ﻿namespace CpuFreqTrayIcon
 {
     using System;
+    using System.Diagnostics;
     using System.Drawing;
     using System.Drawing.Text;
     using System.Management;
@@ -30,17 +31,26 @@
             notifyIcon1.Icon = Icon.FromHandle(hIcon);
             bitmapText.Dispose();
             g.Dispose();
+            fontToUse.Dispose();
         }
 
         private void timer1_Tick(object sender, EventArgs e)
         {
-            uint currentsp, Maxsp;
-            using (var Mo = new ManagementObject("Win32_Processor.DeviceID='CPU0'"))
+            try
             {
-                currentsp = (uint) Mo["CurrentClockSpeed"];
-                Maxsp = (uint) Mo["MaxClockSpeed"];
+                uint currentsp, Maxsp;
+                using (var Mo = new ManagementObject("Win32_Processor.DeviceID='CPU0'"))
+                {
+                    currentsp = (uint) Mo["CurrentClockSpeed"];
+                    Maxsp = (uint) Mo["MaxClockSpeed"];
+                }
+
+                CreateTextIcon(currentsp, Maxsp);
             }
-            CreateTextIcon(currentsp, Maxsp);
+            catch (Exception ex)
+            {
+                Application.Restart();
+            }
         }
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
